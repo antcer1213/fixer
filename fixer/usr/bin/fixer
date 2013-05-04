@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import fnmatch
+
+CWD  = os.getcwd() + "/"
+
+class Main():
+    def __init__(self, arg):
+        arg = arg[0]
+        if not os.path.exists(arg):
+            print("ERROR: File path does not exist. Please try again with an existant filepath.")
+            return 1
+
+        print("Selected Directory: " + arg)
+        if os.path.isdir(arg):
+            temp  = os.listdir(arg)
+            files = []
+            term  = []
+
+            for f in temp:
+                tmp = f.split(".")
+                if tmp[-1] == "html":
+                    files.append(f)
+            for i in range(len(files)):
+                term.append("\t" + files[i])
+            print("HTML Files:\n " + "\n".join(term) + "\n\n")
+
+            for f in files:
+                if CWD in f:
+                    print("Working on file, " + f + "...")
+                    content = self.content_for_compare(f)
+                elif "/" not in f:
+                    print("Working on file, " + CWD+arg+"/"+f + "...")
+                    content = self.content_for_compare(CWD+arg+"/"+f)
+                else:
+                    print("A weird situation appeared. Tell me about it! :)")
+
+                lines, term = self.lines_than_need_to_be_fixed(content)
+
+                if lines:
+                    print("Status: Needs corrections")
+                    print("Lines To Be Corrected:\n " + "".join(term))
+                    content = self.fix_lines(content, lines)
+                    if CWD in f:
+                        self.write_back_to_file(content, f)
+                    elif "/" not in f:
+                        self.write_back_to_file(content, CWD+arg+"/"+f)
+                    else:
+                        print("A weird situation appeared. Tell me about it! :)")
+                else:
+                    print("Status: No corrections necessary")
+                    print("Lines To Be Fixed:\n\tNone\n")
+        else:
+            print("ERROR: File path is not a directory. Please use the parent directory, not a specific file.")
+
+
+    def content_for_compare(self, filename):
+        with open(filename) as file:
+            content = file.readlines()
+        #~ self.content = content[:]
+        return content
+
+    def lines_than_need_to_be_fixed(self, content):
+        lines = []
+        term  = []
+        for i, x in enumerate(content):
+            if fnmatch.fnmatch(x, "*href*#*%20*"):
+                lines.append([i,x])
+            elif fnmatch.fnmatch(x, "*id=*%20*"):
+                lines.append([i,x])
+        if lines == []:
+            return False, False
+        for x in lines:
+            trm = "\t-" + str(x[0] + 1) + "  " + x[1]
+            if lines[len(lines) -1] == x:
+                trm = trm[:-1]
+            term.append(trm)
+
+        return lines, term
+
+    def fix_lines(self, content, lines):
+        term = []
+
+        for x in lines:
+            x[1] = x[1].replace("%20", "_")
+
+        for x in lines:
+            trm = "\t-" + str(x[0] + 1) + "  " + x[1]
+            if lines[len(lines) -1] == x:
+                trm = trm[:-1]
+            term.append(trm)
+        print("Corrections Made:\n " + "".join(term))
+
+
+        for x in lines:
+            content[x[0]] = x[1]
+        return content
+
+    def write_back_to_file(self, content, filename):
+        with open(filename, 'w') as file:
+            file.writelines(content)
+        print("Status: Completed!\n")
+
+
+
+
+Main(sys.argv[1:])

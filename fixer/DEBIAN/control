@@ -1,0 +1,9 @@
+Package: fixer
+Version: 20130504
+Section: main
+Priority: optional
+Architecture: all
+Depends: 
+Maintainer: Anthony Cervantes
+Description: Basic fixer for Bodhi Docs
+ A simple commandline corrector for the %20 bug found by elwoodblues.
