@@ -36,6 +36,7 @@ class Main():
                     content = self.content_for_compare(CWD+arg+"/"+f)
                 else:
                     print("A weird situation appeared. Tell me about it! :)")
+                    return 1
 
                 lines, term = self.lines_than_need_to_be_fixed(content)
 
@@ -49,6 +50,7 @@ class Main():
                         self.write_back_to_file(content, CWD+arg+"/"+f)
                     else:
                         print("A weird situation appeared. Tell me about it! :)")
+                        return 1
                 else:
                     print("Status: No corrections necessary")
                     print("Lines To Be Fixed:\n\tNone\n")
